@@ -1,6 +1,6 @@
 # Ranked
 
-> Real-time Leaderboard system for ranking and score in Go
+Real-time Leaderboard system for ranking and score in Go
 
 # Features
 
