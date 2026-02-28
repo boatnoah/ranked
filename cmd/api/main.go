@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/boatnoah/ranked/internal/db"
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	cfg := config{
-		addr: env.GetString("ADDR", ":8000"),
+		addr: env.GetString("ADDR", ":8080"),
 
 		db: dbConfig{
 			addr:         env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/ranked?sslmode=disable"),
@@ -57,5 +58,5 @@ func main() {
 	}
 
 	mux := app.mount()
-	app.run(mux)
+	log.Fatal(app.run(mux))
 }
