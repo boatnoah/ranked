@@ -1,20 +1,20 @@
-BINARY := bin/iupload
-PKG := ./cmd/api
+-include .env
+MIGRATIONS_PATH = ./cmd/migrate/migrations
+.EXPORT_ALL_VARIABLES:
 
-.PHONY: build run test tidy clean
 
-build:
-	@mkdir -p $(dir $(BINARY))
-	go build -o $(BINARY) $(PKG)
-
-run:
-	go run $(PKG)
-
+.PHONY: test
 test:
-	go test ./...
+	@go test -v ./...
 
-tidy:
-	go mod tidy
+.PHONY: migrate-create
+migration:
+	@migrate create -seq -ext sql -dir $(MIGRATIONS_PATH) $(filter-out $@,$(MAKECMDGOALS))
 
-clean:
-	rm -f $(BINARY)
+.PHONY: migrate-up
+migrate-up:
+	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) up
+
+.PHONY: migrate-down
+migrate-down:
+	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down $(filter-out $@,$(MAKECMDGOALS))

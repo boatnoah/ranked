@@ -77,7 +77,7 @@ func (app *application) run(mux http.Handler) error {
 		quit := make(chan os.Signal, 1)
 
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		s := <-quit
+		<-quit
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
