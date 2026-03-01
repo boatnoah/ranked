@@ -19,7 +19,7 @@ type application struct {
 	config        config
 	store         storage.Storage
 	redis         *redis.Client
-	authenticator *auth.Authenticator
+	authenticator auth.Authenticator
 }
 
 type config struct {

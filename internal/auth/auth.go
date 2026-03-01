@@ -1,7 +1,8 @@
 package auth
 
-type Authenticator struct{}
+import "github.com/golang-jwt/jwt/v5"
 
-func New() *Authenticator {
-	return &Authenticator{}
+type Authenticator interface {
+	GenerateToken(claims jwt.Claims) (string, error)
+	ValidateToken(token string) (*jwt.Token, error)
 }

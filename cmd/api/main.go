@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/boatnoah/ranked/internal/auth"
 	"github.com/boatnoah/ranked/internal/db"
 	"github.com/boatnoah/ranked/internal/env"
 	"github.com/boatnoah/ranked/internal/sortedsets"
@@ -34,7 +35,7 @@ func main() {
 			token: tokenConfig{
 				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
 				exp:    time.Hour * 24 * 3, // 3 days
-				iss:    "gophersocial",
+				iss:    "ranked",
 			},
 		},
 	}
@@ -51,10 +52,18 @@ func main() {
 
 	store := storage.NewStorage(db)
 
+	jwtAuthenticator := auth.NewJWTAuthenticator(
+		cfg.auth.token.secret,
+		cfg.auth.token.iss,
+		cfg.auth.token.iss,
+	)
+	sortedsets := sortedsets.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		redis:  sortedsets.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db),
+		config:        cfg,
+		store:         store,
+		redis:         sortedsets,
+		authenticator: jwtAuthenticator,
 	}
 
 	mux := app.mount()
