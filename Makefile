@@ -8,7 +8,7 @@ test:
 	@go test -v ./...
 
 .PHONY: migrate-create
-migration:
+migrate-create:
 	@migrate create -seq -ext sql -dir $(MIGRATIONS_PATH) $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: migrate-up

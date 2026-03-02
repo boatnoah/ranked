@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -22,16 +20,11 @@ type Storage struct {
 		Create(context.Context, *sql.Tx, *User) error
 		Delete(context.Context, int64) error
 	}
-	SessionStorage interface {
-		CreateSession(context.Context, uuid.UUID) (*Session, error)
-		GetIDbyToken(context.Context, string) (string, error)
-	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		UserStorage:    &UserStore{db},
-		SessionStorage: &SessionStore{db},
+		UserStorage: &UserStore{db},
 	}
 }
 

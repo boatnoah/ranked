@@ -29,7 +29,10 @@ func AddPlayer(ctx context.Context, client *redis.Client, score float64, email s
 		Member: email,
 	}
 
-	client.ZAdd(ctx, "leaderboard", &member)
+	_, err := client.ZAdd(ctx, "leaderboard", &member).Result()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
