@@ -150,7 +150,6 @@ Response:
 | username   | CITEXT    | Unique, not null |
 | email      | CITEXT    | Unique, not null |
 | password   | BYTEA     | bcrypt hash      |
-| is_active  | BOOLEAN   | Default true     |
 | created_at | TIMESTAMP | Default now()    |
 
 ### scores

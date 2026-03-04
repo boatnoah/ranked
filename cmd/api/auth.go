@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/boatnoah/ranked/internal/storage"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -18,8 +19,6 @@ type Token struct {
 	Token string
 }
 
-// v1/register
-
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userPayload UserPayload
 
@@ -29,6 +28,22 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	if err != nil {
 		http.Error(w, "Bad user request", http.StatusBadRequest)
+		return
+	}
+
+	var user storage.User
+
+	user.Email = userPayload.Email
+	user.Username = userPayload.Username
+	err = user.Password.Set(userPayload.Password)
+	if err != nil {
+		http.Error(w, "Unable to hash password", http.StatusInternalServerError)
+		return
+	}
+
+	err = app.store.UserStorage.Create(r.Context(), &user)
+	if err != nil {
+		http.Error(w, "unable to create user", http.StatusInternalServerError)
 		return
 	}
 

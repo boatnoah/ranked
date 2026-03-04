@@ -17,7 +17,7 @@ type Storage struct {
 	UserStorage interface {
 		GetByID(context.Context, int64) (*User, error)
 		GetByEmail(context.Context, string) (*User, error)
-		Create(context.Context, *sql.Tx, *User) error
+		Create(context.Context, *User) error
 		Delete(context.Context, int64) error
 	}
 }
