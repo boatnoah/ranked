@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/boatnoah/ranked/internal/storage"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -49,8 +50,31 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		// create a way to get the user
+		user, err := app.getUser(ctx, userID)
+		if err != nil {
+			http.Error(w, "Unable to retrieve user", http.StatusBadRequest)
+			return
+		}
 
-		ctx = context.WithValue(ctx, userCtx, userID)
+		ctx = context.WithValue(ctx, userCtx, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (app *application) getUser(ctx context.Context, userID int64) (*storage.User, error) {
+	if !app.config.redisCfg.enabled {
+		return app.store.UserStorage.GetByID(ctx, userID)
+	}
+
+	user, err := app.store.UserStorage.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (app *application) getUserFromContext(r *http.Request) *storage.User {
+	user, _ := r.Context().Value(userCtx).(*storage.User)
+	return user
 }
