@@ -44,12 +44,12 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["sub"]), 10, 64)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%v", err), http.StatusUnauthorized)
+			fmt.Println(err)
 			return
 		}
 
 		ctx := r.Context()
 
-		// create a way to get the user
 		user, err := app.getUser(ctx, userID)
 		if err != nil {
 			http.Error(w, "Unable to retrieve user", http.StatusBadRequest)

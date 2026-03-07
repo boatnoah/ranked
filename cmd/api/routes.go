@@ -20,7 +20,11 @@ func (app *application) mount() http.Handler {
 		r.Post("/register", app.registerUserHandler)
 		r.Post("/login", app.loginUserHandler)
 		r.Post("/logout", app.logoutUserHandler)
-		r.Route("/ranked", func(r chi.Router) {})
+		r.Route("/ranked", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
+			r.Get("/leaderboard", app.leaderboardHandler)
+			r.Post("/score", app.matchSubmissionHandler)
+		})
 	})
 
 	return r
