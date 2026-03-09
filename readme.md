@@ -6,7 +6,7 @@ Real-time Leaderboard system for ranking and score in Go
 
 - User Authentication: Users should be able to register and log in to the system.
 
-- Score Submission: Users should be able to submit their scores for different games or activities.
+- Match Submission: Users submit results that adjust trophies.
 
 - Leaderboard Updates: Display a global leaderboard showing the top users across all games.
 
@@ -152,7 +152,7 @@ Response:
 | password   | BYTEA     | bcrypt hash      |
 | created_at | TIMESTAMP | Default now()    |
 
-### scores
+### matches
 
 | Column           | Type        | Notes                |
 | ---------------- | ----------- | -------------------- |
@@ -162,6 +162,14 @@ Response:
 | crowns           | INT         | 1-3                  |
 | trophies_changed | INT         | Positive or negative |
 | submitted_at     | TIMESTAMP   | Default now()        |
+
+### user_trophies
+
+| Column     | Type      | Notes                          |
+| ---------- | --------- | ------------------------------ |
+| user_id    | BIGINT    | PK, FK to users(id)            |
+| trophies   | INT       | Current total, non-negative    |
+| updated_at | TIMESTAMP | Default now(), last write time |
 
 ## Redis
 

@@ -57,12 +57,13 @@ func main() {
 		cfg.auth.token.iss,
 		cfg.auth.token.iss,
 	)
-	sortedsets := sortedsets.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+	redisClient := sortedsets.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+	redisStore := sortedsets.NewRedisStore(redisClient)
 
 	app := &application{
 		config:        cfg,
 		store:         store,
-		redis:         sortedsets,
+		redis:         redisStore,
 		authenticator: jwtAuthenticator,
 	}
 

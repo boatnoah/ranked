@@ -15,10 +15,19 @@ var (
 
 type Storage struct {
 	UserStorage interface {
-		GetByID(context.Context, int64) (*User, error)
-		GetByEmail(context.Context, string) (*User, error)
 		Create(context.Context, *User) error
 		Delete(context.Context, int64) error
+		GetByID(context.Context, int64) (*User, error)
+		GetByEmail(context.Context, string) (*User, error)
+	}
+	MatchStore interface {
+		Create(context.Context, int64, string, int, int64) error
+		GetMatchesByID(context.Context, int64) ([]Matches, error)
+	}
+	TrophyStore interface {
+		Upsert(context.Context, int64, int64) error
+		GetTrophyCountByID(context.Context, int64) (int64, error)
+		GetTrophies(context.Context) ([]UserTrophies, error)
 	}
 }
 

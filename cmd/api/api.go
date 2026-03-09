@@ -10,15 +10,14 @@ import (
 	"time"
 
 	"github.com/boatnoah/ranked/internal/auth"
+	"github.com/boatnoah/ranked/internal/sortedsets"
 	"github.com/boatnoah/ranked/internal/storage"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type application struct {
 	config        config
 	store         storage.Storage
-	redis         *redis.Client
+	redis         sortedsets.Store
 	authenticator auth.Authenticator
 }
 
