@@ -52,8 +52,7 @@ func (ut *UserTrophyStore) Upsert(ctx context.Context, userID int64, delta int64
 func (ut *UserTrophyStore) GetTrophyCountByID(ctx context.Context, userID int64) (*UserTrophies, error) {
 	query := `
 		SELECT trophies FROM user_trophies
-		WHERE
-			user_id = $1
+		WHERE user_id = $1
 		`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -77,5 +76,31 @@ func (ut *UserTrophyStore) GetTrophyCountByID(ctx context.Context, userID int64)
 
 }
 
-func (ut *UserTrophyStore) GetTrophies(ctx context.Context) ([]UserTrophies, error) {
+func (ut *UserTrophyStore) GetAllTrophies(ctx context.Context) ([]UserTrophies, error) {
+
+	query := `
+		SELECT user_id, trophies FROM user_trophies
+	`
+
+	rows, err := ut.db.QueryContext(ctx, query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var userTrophies []UserTrophies
+
+	for rows.Next() {
+		var user UserTrophies
+		err := rows.Scan(&user.UserID, &user.Trophies, &user.UpdatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		userTrophies = append(userTrophies, user)
+	}
+
+	return userTrophies, nil
+
 }

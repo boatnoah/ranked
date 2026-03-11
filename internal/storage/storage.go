@@ -22,12 +22,12 @@ type Storage struct {
 	}
 	MatchStore interface {
 		Create(context.Context, int64, string, int, int64) error
-		GetMatchesByID(context.Context, int64) ([]Matches, error)
+		GetMatchesByUserID(context.Context, int64) ([]Matches, error)
 	}
 	TrophyStore interface {
 		Upsert(context.Context, int64, int64) error
 		GetTrophyCountByID(context.Context, int64) (*UserTrophies, error)
-		GetTrophies(context.Context) ([]UserTrophies, error)
+		GetAllTrophies(context.Context) ([]UserTrophies, error)
 	}
 }
 
@@ -35,6 +35,7 @@ func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		UserStorage: &UserStore{db},
 		TrophyStore: &UserTrophyStore{db},
+		MatchStore:  &MatcheStore{db},
 	}
 }
 
