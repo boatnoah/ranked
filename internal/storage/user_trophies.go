@@ -41,14 +41,7 @@ func (ut *UserTrophyStore) Upsert(ctx context.Context, userID int64, delta int64
 		).Err()
 
 		if err != nil {
-			switch {
-			case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-				return ErrDuplicateEmail
-			case err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"`:
-				return ErrDuplicateUsername
-			default:
-				return err
-			}
+			return err
 		}
 
 		return nil
@@ -56,7 +49,32 @@ func (ut *UserTrophyStore) Upsert(ctx context.Context, userID int64, delta int64
 
 }
 
-func (ut *UserTrophyStore) GetTrophyCountByID(ctx context.Context, userID int64) (int64, error) {
+func (ut *UserTrophyStore) GetTrophyCountByID(ctx context.Context, userID int64) (*UserTrophies, error) {
+	query := `
+		SELECT trophies FROM user_trophies
+		WHERE
+			user_id = $1
+		`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var userTrophies UserTrophies
+	err := ut.db.QueryRowContext(
+		ctx,
+		query,
+		userID,
+	).Scan(
+		&userTrophies.UserID,
+		&userTrophies.Trophies,
+		&userTrophies.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userTrophies, err
+
 }
 
 func (ut *UserTrophyStore) GetTrophies(ctx context.Context) ([]UserTrophies, error) {

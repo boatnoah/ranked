@@ -26,7 +26,7 @@ type Storage struct {
 	}
 	TrophyStore interface {
 		Upsert(context.Context, int64, int64) error
-		GetTrophyCountByID(context.Context, int64) (int64, error)
+		GetTrophyCountByID(context.Context, int64) (*UserTrophies, error)
 		GetTrophies(context.Context) ([]UserTrophies, error)
 	}
 }
@@ -34,6 +34,7 @@ type Storage struct {
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		UserStorage: &UserStore{db},
+		TrophyStore: &UserTrophyStore{db},
 	}
 }
 
