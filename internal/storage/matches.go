@@ -25,11 +25,11 @@ type Matches struct {
 // 		Create(context.Context, int64, string, int, int64) error
 // 		GetMatchesByID(context.Context, int64) ([]Matches, error)
 
-type MatcheStore struct {
+type MatchStore struct {
 	db *sql.DB
 }
 
-func (ms *MatcheStore) Create(ctx context.Context, userID int64, result string, crowns int, delta int64) error {
+func (ms *MatchStore) Create(ctx context.Context, userID int64, result string, crowns int, delta int64) error {
 	query := `
 		INSERT INTO matches (user_id, result, crowns, trophies_changed) 
 	`
@@ -55,6 +55,30 @@ func (ms *MatcheStore) Create(ctx context.Context, userID int64, result string, 
 
 }
 
-func (ms *MatcheStore) GetMatchByUserID(ctx context.Context, userID int64) ([]Matches, error) {
-	// todo
+func (ms *MatchStore) GetMatchByUserID(ctx context.Context, userID int64) ([]Matches, error) {
+	query := `
+		SELECT id, result, crowns, trophies_changed, submitted_at FROM matches
+		WHERE = $1
+	`
+
+	rows, err := ms.db.QueryContext(ctx, query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var matches []Matches
+
+	for rows.Next() {
+		var match Matches
+		match.UserID = userID
+		err := rows.Scan(&match.ID, &match.Result, &match.Crowns, &match.TrophiesChanged, &match.SubmittedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		matches = append(matches)
+	}
+
 }

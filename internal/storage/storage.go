@@ -35,7 +35,7 @@ func NewStorage(db *sql.DB) Storage {
 	return Storage{
 		UserStorage: &UserStore{db},
 		TrophyStore: &UserTrophyStore{db},
-		MatchStore:  &MatcheStore{db},
+		MatchStore:  &MatchStore{db},
 	}
 }
 
