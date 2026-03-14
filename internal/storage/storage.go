@@ -21,7 +21,7 @@ type Storage struct {
 		GetByEmail(context.Context, string) (*User, error)
 	}
 	MatchStore interface {
-		Create(context.Context, int64, string, int, int64) error
+		Create(context.Context, int64, string, int64, int64) error
 		GetMatchesByUserID(context.Context, int64) ([]Matches, error)
 	}
 	TrophyStore interface {

@@ -29,7 +29,7 @@ type MatchStore struct {
 	db *sql.DB
 }
 
-func (ms *MatchStore) Create(ctx context.Context, userID int64, result string, crowns int, delta int64) error {
+func (ms *MatchStore) Create(ctx context.Context, userID int64, result string, crowns int64, delta int64) error {
 	query := `
 		INSERT INTO matches (user_id, result, crowns, trophies_changed) 
 	`
@@ -55,7 +55,7 @@ func (ms *MatchStore) Create(ctx context.Context, userID int64, result string, c
 
 }
 
-func (ms *MatchStore) GetMatchByUserID(ctx context.Context, userID int64) ([]Matches, error) {
+func (ms *MatchStore) GetMatchesByUserID(ctx context.Context, userID int64) ([]Matches, error) {
 	query := `
 		SELECT id, result, crowns, trophies_changed, submitted_at FROM matches
 		WHERE = $1
@@ -78,7 +78,7 @@ func (ms *MatchStore) GetMatchByUserID(ctx context.Context, userID int64) ([]Mat
 			return nil, err
 		}
 
-		matches = append(matches)
+		matches = append(matches, match)
 	}
-
+	return matches, nil
 }
