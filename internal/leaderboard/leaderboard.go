@@ -20,8 +20,6 @@ type MatchPayload struct {
 	Crowns int64
 }
 
-const MAXCROWNS = 3
-
 func (l *Leaderboard) Submit(ctx context.Context, matchPayload MatchPayload) error {
 
 	err := validatePayload(matchPayload)
@@ -47,7 +45,7 @@ func validatePayload(matchPayload MatchPayload) error {
 	if matchPayload.Crowns == 0 && matchPayload.Result == "win" {
 		return errors.New("Breaking game logic; cannot win with zero crowns")
 	}
-	if matchPayload.Crowns == MAXCROWNS && matchPayload.Result == "loss" {
+	if matchPayload.Crowns == 3 && matchPayload.Result == "loss" {
 		return errors.New("Breaking game logic; cannot loss with max crowns")
 	}
 	return nil
@@ -61,8 +59,8 @@ func validatePayload(matchPayload MatchPayload) error {
 func calcDelta(matchPayload MatchPayload) int64 {
 	crowns := matchPayload.Crowns
 
-	r := rand.Int64()
-	bias := crowns / MAXCROWNS
+	r := rand.Float64()
+	bias := float64(crowns) / 3.0
 
 	switch matchPayload.Result {
 
