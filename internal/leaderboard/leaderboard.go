@@ -63,6 +63,35 @@ func (l *Leaderboard) Submit(ctx context.Context, mp MatchPayload) (int64, error
 	return score, nil
 }
 
+func (l *Leaderboard) GetPlayerRank(ctx context.Context, userID int64) (*sortedsets.Entry, error) {
+	entry, err := l.redisStorage.Rank(ctx, userID)
+	if err != nil {
+		users, err := l.storage.TrophyStore.GetAllTrophies(ctx)
+
+		if len(users) == 0 {
+			return nil, errors.New("No players in the leaderboard")
+		}
+
+		var entries []sortedsets.Entry
+
+		for _, user := range users {
+			entry := sortedsets.Entry{UserID: user.UserID, Trophies: user.Trophies}
+
+			entries = append(entries, entry)
+		}
+
+		l.redisStorage.BulkSet(ctx, entries)
+
+		entry, err = l.redisStorage.Rank(ctx, userID)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &entry, nil
+}
+
 func validatePayload(matchPayload MatchPayload) error {
 	if matchPayload.Crowns < 0 || matchPayload.Crowns > 3 {
 		return errors.New("Valid crowns must be in the range of 0 - 3")

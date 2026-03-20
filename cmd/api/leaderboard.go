@@ -49,12 +49,18 @@ func (app *application) leaderboardHandler(w http.ResponseWriter, r *http.Reques
 
 	user := app.getUserFromContext(r)
 
-	userJson, err := json.Marshal(user)
+	entry, err := app.service.GetPlayerRank(r.Context(), user.ID)
+
 	if err != nil {
-		http.Error(w, "Json marshaling went wrong", http.StatusInternalServerError)
+		http.Error(w, "Unable to retrieve player rank", http.StatusNotFound)
 		return
 	}
 
-	w.Write(userJson)
+	entryJson, err := json.MarshalIndent(entry, "", " ")
 
+	if err != nil {
+		http.Error(w, "Unable marshal entry struct", http.StatusInternalServerError)
+		return
+	}
+	w.Write(entryJson)
 }
