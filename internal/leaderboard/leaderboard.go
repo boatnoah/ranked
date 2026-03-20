@@ -10,8 +10,8 @@ import (
 )
 
 type Leaderboard struct {
-	storage      storage.Storage
-	redisStorage sortedsets.RedisStore
+	storage      *storage.Storage
+	redisStorage *sortedsets.RedisStore
 }
 
 type MatchPayload struct {
@@ -20,18 +20,47 @@ type MatchPayload struct {
 	Crowns int64
 }
 
-func (l *Leaderboard) Submit(ctx context.Context, matchPayload MatchPayload) error {
+func New(store *storage.Storage, redisStore *sortedsets.RedisStore) *Leaderboard {
+	return &Leaderboard{store, redisStore}
+}
 
-	err := validatePayload(matchPayload)
+func (l *Leaderboard) Submit(ctx context.Context, mp MatchPayload) (int64, error) {
+
+	err := validatePayload(mp)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	delta := calcDelta(matchPayload)
+	delta := calcDelta(mp)
 
-	l.storage.MatchStore.Create(ctx, matchPayload.UserID, matchPayload.Result, matchPayload.Crowns, delta)
-	return nil
+	var score int64
 
+	err = l.storage.WithTx(ctx, func(ts storage.TxStorage) error {
+		err = ts.MatchStore.Create(ctx, mp.UserID, mp.Result, mp.Crowns, delta)
+
+		if err != nil {
+			return err
+		}
+
+		err = ts.TrophyStore.Upsert(ctx, mp.UserID, delta)
+
+		if err != nil {
+			return err
+		}
+
+		s, err := l.redisStorage.Incr(ctx, mp.UserID, delta)
+		if err != nil {
+			return err
+		}
+		score = s
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return score, nil
 }
 
 func validatePayload(matchPayload MatchPayload) error {
@@ -46,7 +75,7 @@ func validatePayload(matchPayload MatchPayload) error {
 		return errors.New("Breaking game logic; cannot win with zero crowns")
 	}
 	if matchPayload.Crowns == 3 && matchPayload.Result == "loss" {
-		return errors.New("Breaking game logic; cannot loss with max crowns")
+		return errors.New("Breaking game logic; cannot lose with max crowns")
 	}
 	return nil
 
@@ -64,16 +93,18 @@ func calcDelta(matchPayload MatchPayload) int64 {
 
 	switch matchPayload.Result {
 
+	// adjust offset a but a reasonably amount
+
 	case "win":
 		mn := 26
 		x := (1-bias)*r + bias
-		res := int64(mn + (10 * int(x)))
+		res := int64(mn + (8 * int(x)))
 		return res
 	case "loss":
 		mn := 22
 		x := (1 - bias) * r
-		res := int64(mn + (8 * int(x)))
-		return res
+		res := int64(mn + (10 * int(x)))
+		return -res
 	default:
 		return 0
 	}

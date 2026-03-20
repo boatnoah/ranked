@@ -2,19 +2,23 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/boatnoah/ranked/internal/leaderboard"
 )
 
-type MatchPayload struct {
-	Result string
-	Crowns int32
+type SubmissionResponse struct {
+	UserID int64
+	Rank   int64
 }
 
 func (app *application) matchSubmissionHandler(w http.ResponseWriter, r *http.Request) {
-	var matchPayload MatchPayload
+
+	user := app.getUserFromContext(r)
+	var matchPayload leaderboard.MatchPayload
 
 	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&matchPayload)
 
 	if err != nil {
@@ -22,8 +26,23 @@ func (app *application) matchSubmissionHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// write leaderboard service
+	matchPayload.UserID = user.ID
 
+	score, err := app.service.Submit(r.Context(), matchPayload)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := SubmissionResponse{UserID: user.ID, Rank: score + 1}
+	jsonResponse, err := json.MarshalIndent(response, "", " ")
+
+	if err != nil {
+		http.Error(w, "Unable to parse json response", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(jsonResponse)
 }
 
 func (app *application) leaderboardHandler(w http.ResponseWriter, r *http.Request) {

@@ -30,32 +30,36 @@ type MatchStore struct {
 }
 
 func (ms *MatchStore) Create(ctx context.Context, userID int64, result string, crowns int64, delta int64) error {
-	query := `
+
+	return withTx(ms.db, ctx, func(tx *sql.Tx) error {
+		query := `
 		INSERT INTO matches (user_id, result, crowns, trophies_changed) 
 	`
-	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
-	defer cancel()
+		ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+		defer cancel()
 
-	res, err := ms.db.ExecContext(ctx, query, userID, result, crowns, delta)
+		res, err := ms.db.ExecContext(ctx, query, userID, result, crowns, delta)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
+		rows, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
 
-	if rows == 0 {
-		return errors.New("Something went wrong unable to log match")
-	}
+		if rows == 0 {
+			return errors.New("Something went wrong unable to log match")
+		}
 
-	return nil
+		return nil
+	})
 
 }
 
 func (ms *MatchStore) GetMatchesByUserID(ctx context.Context, userID int64) ([]Matches, error) {
+
 	query := `
 		SELECT id, result, crowns, trophies_changed, submitted_at FROM matches
 		WHERE = $1

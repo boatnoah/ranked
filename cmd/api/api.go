@@ -10,14 +10,14 @@ import (
 	"time"
 
 	"github.com/boatnoah/ranked/internal/auth"
-	"github.com/boatnoah/ranked/internal/sortedsets"
+	"github.com/boatnoah/ranked/internal/leaderboard"
 	"github.com/boatnoah/ranked/internal/storage"
 )
 
 type application struct {
 	config        config
 	store         storage.Storage
-	redis         sortedsets.Store
+	service       *leaderboard.Leaderboard
 	authenticator auth.Authenticator
 }
 

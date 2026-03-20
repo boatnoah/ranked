@@ -7,6 +7,7 @@ import (
 	"github.com/boatnoah/ranked/internal/auth"
 	"github.com/boatnoah/ranked/internal/db"
 	"github.com/boatnoah/ranked/internal/env"
+	"github.com/boatnoah/ranked/internal/leaderboard"
 	"github.com/boatnoah/ranked/internal/sortedsets"
 	"github.com/boatnoah/ranked/internal/storage"
 )
@@ -59,11 +60,12 @@ func main() {
 	)
 	redisClient := sortedsets.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
 	redisStore := sortedsets.NewRedisStore(redisClient)
+	leaderBoardSvc := leaderboard.New(&store, redisStore)
 
 	app := &application{
 		config:        cfg,
 		store:         store,
-		redis:         redisStore,
+		service:       leaderBoardSvc,
 		authenticator: jwtAuthenticator,
 	}
 

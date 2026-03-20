@@ -14,6 +14,7 @@ var (
 )
 
 type Storage struct {
+	db          *sql.DB
 	UserStorage interface {
 		Create(context.Context, *User) error
 		Delete(context.Context, int64) error
@@ -33,10 +34,29 @@ type Storage struct {
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
+		db:          db,
 		UserStorage: &UserStore{db},
 		TrophyStore: &UserTrophyStore{db},
 		MatchStore:  &MatchStore{db},
 	}
+}
+
+type TxStorage struct {
+	MatchStore interface {
+		Create(context.Context, int64, string, int64, int64) error
+	}
+	TrophyStore interface {
+		Upsert(context.Context, int64, int64) error
+	}
+}
+
+func (s Storage) WithTx(ctx context.Context, fn func(TxStorage) error) error {
+	return withTx(s.db, ctx, func(tx *sql.Tx) error {
+		return fn(TxStorage{
+			MatchStore:  &MatchTxStore{tx},
+			TrophyStore: &UserTrophyTxStore{tx},
+		})
+	})
 }
 
 func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
