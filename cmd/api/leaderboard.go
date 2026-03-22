@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/boatnoah/ranked/internal/leaderboard"
 )
@@ -63,4 +64,35 @@ func (app *application) leaderboardHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	w.Write(entryJson)
+}
+
+func (app *application) topPlayersHandler(w http.ResponseWriter, r *http.Request) {
+	limit := r.URL.Query().Get("limit")
+
+	if limit == "" {
+		http.Error(w, "Must have url query of limit", http.StatusBadRequest)
+		return
+	}
+
+	val, err := strconv.Atoi(limit)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
+		return
+	}
+
+	entries, err := app.service.GetTopPlayers(r.Context(), int64(val))
+
+	if err != nil {
+		http.Error(w, "Unable to get top players", http.StatusInternalServerError)
+		return
+	}
+
+	entriesJson, err := json.MarshalIndent(entries, "", " ")
+
+	if err != nil {
+		http.Error(w, "Unable to marshal json", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(entriesJson)
 }

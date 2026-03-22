@@ -63,6 +63,17 @@ func (l *Leaderboard) Submit(ctx context.Context, mp MatchPayload) (int64, error
 	return score, nil
 }
 
+func (l *Leaderboard) GetTopPlayers(ctx context.Context, limit int64) (*[]sortedsets.Entry, error) {
+	entries, err := l.redisStorage.Top(ctx, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &entries, nil
+
+}
+
 func (l *Leaderboard) GetPlayerRank(ctx context.Context, userID int64) (*sortedsets.Entry, error) {
 	entry, err := l.redisStorage.Rank(ctx, userID)
 	if err != nil {
