@@ -10,8 +10,8 @@ import (
 )
 
 type SubmissionResponse struct {
-	UserID int64
-	Rank   int64
+	UserID int64 `json:"user_id"`
+	Rank   int64 `json:"rank"`
 }
 
 func (app *application) matchSubmissionHandler(w http.ResponseWriter, r *http.Request) {

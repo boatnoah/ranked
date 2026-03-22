@@ -2,7 +2,6 @@ package sortedsets
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
@@ -12,9 +11,9 @@ const allTimeKey = "lb:alltime"
 
 // Entry represents a leaderboard row in Redis.
 type Entry struct {
-	UserID   int64
-	Trophies int64
-	Rank     int64
+	UserID   int64 `json:"user_id"`
+	Trophies int64 `json:"trophies"`
+	Rank     int64 `json:"rank"`
 }
 
 type Store interface {
@@ -38,8 +37,6 @@ func (s *RedisStore) Incr(ctx context.Context, userID int64, delta int64) (int64
 	oldScore, err := s.cmd.ZScore(ctx, allTimeKey, member).Result()
 
 	if err != nil {
-
-		fmt.Errorf("%v", err)
 		return 0, err
 	}
 	newScore := max(0, int64(oldScore)+delta)
@@ -47,7 +44,6 @@ func (s *RedisStore) Incr(ctx context.Context, userID int64, delta int64) (int64
 	err = s.cmd.ZAdd(ctx, allTimeKey, &redis.Z{Member: member, Score: float64(newScore)}).Err()
 
 	if err != nil {
-		fmt.Errorf("%v", err)
 		return 0, err
 	}
 
