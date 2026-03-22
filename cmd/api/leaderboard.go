@@ -53,7 +53,7 @@ func (app *application) leaderboardHandler(w http.ResponseWriter, r *http.Reques
 	entry, err := app.service.GetPlayerRank(r.Context(), user.ID)
 
 	if err != nil {
-		http.Error(w, "Unable to retrieve player rank", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Unable to retrieve player rank %v", err), http.StatusNotFound)
 		return
 	}
 

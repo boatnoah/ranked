@@ -2,6 +2,7 @@ package sortedsets
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
@@ -34,11 +35,23 @@ func NewRedisStore(cmd redis.Cmdable) *RedisStore {
 
 func (s *RedisStore) Incr(ctx context.Context, userID int64, delta int64) (int64, error) {
 	member := strconv.FormatInt(userID, 10)
-	score, err := s.cmd.ZIncrBy(ctx, allTimeKey, float64(delta), member).Result()
+	oldScore, err := s.cmd.ZScore(ctx, allTimeKey, member).Result()
+
 	if err != nil {
+
+		fmt.Errorf("%v", err)
 		return 0, err
 	}
-	return int64(score), nil
+	newScore := max(0, int64(oldScore)+delta)
+
+	err = s.cmd.ZAdd(ctx, allTimeKey, &redis.Z{Member: member, Score: float64(newScore)}).Err()
+
+	if err != nil {
+		fmt.Errorf("%v", err)
+		return 0, err
+	}
+
+	return newScore, nil
 }
 
 func (s *RedisStore) Top(ctx context.Context, limit int64) ([]Entry, error) {

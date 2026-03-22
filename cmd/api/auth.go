@@ -126,7 +126,3 @@ func (app *application) loginUserHandler(w http.ResponseWriter, r *http.Request)
 	w.Write(tokenString)
 
 }
-
-func (app *application) logoutUserHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello"))
-}

@@ -26,7 +26,7 @@ func (ut *UserTrophyStore) Upsert(ctx context.Context, userID int64, delta int64
 		INSERT INTO user_trophies (user_id, trophies) VALUES ($1, $2)
 		ON CONFLICT (user_id)
 		DO UPDATE SET
-			trophies = user_trophies.trophies + EXCLUDE.trophies
+			trophies = GREATEST(0, user_trophies.trophies + EXCLUDED.trophies),
 			updated_at = now()
 		`
 
@@ -79,7 +79,7 @@ func (ut *UserTrophyStore) GetTrophyCountByID(ctx context.Context, userID int64)
 func (ut *UserTrophyStore) GetAllTrophies(ctx context.Context) ([]UserTrophies, error) {
 
 	query := `
-		SELECT user_id, trophies FROM user_trophies
+		SELECT user_id, trophies, updated_at FROM user_trophies
 	`
 
 	rows, err := ut.db.QueryContext(ctx, query)

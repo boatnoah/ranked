@@ -12,10 +12,11 @@ type UserTrophyTxStore struct {
 func (ut *UserTrophyTxStore) Upsert(ctx context.Context, userID int64, delta int64) error {
 
 	query := `
-		INSERT INTO user_trophies (user_id, trophies) VALUES ($1, $2)
+		INSERT INTO user_trophies (user_id, trophies)
+		VALUES ($1, GREATEST(0, $2))
 		ON CONFLICT (user_id)
-		DO UPDATE SET
-			trophies = user_trophies.trophies + EXCLUDED.trophies,
+			DO UPDATE SET
+			trophies = GREATEST(0, user_trophies.trophies + $2),
 			updated_at = now()
 	`
 

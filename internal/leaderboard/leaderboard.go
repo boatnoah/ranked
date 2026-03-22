@@ -79,10 +79,6 @@ func (l *Leaderboard) GetPlayerRank(ctx context.Context, userID int64) (*sorteds
 	if err != nil {
 		users, err := l.storage.TrophyStore.GetAllTrophies(ctx)
 
-		if len(users) == 0 {
-			return nil, errors.New("No players in the leaderboard")
-		}
-
 		var entries []sortedsets.Entry
 
 		for _, user := range users {
@@ -91,7 +87,10 @@ func (l *Leaderboard) GetPlayerRank(ctx context.Context, userID int64) (*sorteds
 			entries = append(entries, entry)
 		}
 
-		l.redisStorage.BulkSet(ctx, entries)
+		err = l.redisStorage.BulkSet(ctx, entries)
+		if err != nil {
+			return nil, err
+		}
 
 		entry, err = l.redisStorage.Rank(ctx, userID)
 
