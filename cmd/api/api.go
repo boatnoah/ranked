@@ -24,8 +24,6 @@ type application struct {
 type config struct {
 	addr     string
 	db       dbConfig
-	env      string
-	apiURL   string
 	auth     authConfig
 	redisCfg redisConfig
 }
